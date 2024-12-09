@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monkey Jump Game</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #88c92e; /* Solid green background */
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #88c92e; /* Matches body background */
+        }
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 100px;
+            background-color: #4CAF50; /* Darker green for contrast */
+        }
+        .monkey {
+            position: absolute;
+            bottom: 100px;
+            left: 100px;
+            width: 60px;
+            height: 60px;
+            background: url('assets/img/monkey.jpg') no-repeat center center;
+            background-size: contain;
+        }
+        .banana {
+            position: absolute;
+            width: 50px;
+            height: 30px;
+            background: url('assets/img/banana.jpg') no-repeat center center;
+            background-size: contain;
+        }
+        .score {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            color: #2d3436;
+        }
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            font-size: 32px;
+        }
+        .game-over button {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container" id="gameContainer">
+        <div class="score">Score: <span id="score">0</span></div>
+        <div class="monkey" id="monkey"></div>
+        <div class="ground"></div>
+    </div>
+    <script>
+        const gameContainer = document.getElementById('gameContainer');
+        const monkey = document.getElementById('monkey');
+        const scoreDisplay = document.getElementById('score');
+        let score = 0;
+        let isJumping = false;
+        let bananaSpeed = 5;
+        let gameOver = false;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !isJumping && !gameOver) {
+                isJumping = true;
+                let jumpHeight = 0;
+                const jumpInterval = setInterval(() => {
+                    if (jumpHeight >= 150) {
+                        clearInterval(jumpInterval);
+                        const fallInterval = setInterval(() => {
+                            if (jumpHeight <= 0) {
+                                clearInterval(fallInterval);
+                                isJumping = false;
+                            }
+                            jumpHeight -= 10;
+                            monkey.style.bottom = `${jumpHeight + 100}px`;
+                        }, 20);
+                    }
+                    jumpHeight += 10;
+                    monkey.style.bottom = `${jumpHeight + 100}px`;
+                }, 20);
+            }
+        });
+
+        function createBananaPair() {
+            if (gameOver) return;
+
+            // Determine spawn type: 1 = below, 2 = above, 3 = both
+            const spawnType = Math.floor(Math.random() * 3) + 1;
+
+            // Create below banana
+            if (spawnType === 1 || spawnType === 3) {
+                createBanana(100); // Bottom banana
+            }
+
+            // Create above banana
+            if (spawnType === 2 || spawnType === 3) {
+                const safeZoneHeight = 150; // Space for monkey to jump safely
+                createBanana(300); // Top banana, leaves room for monkey to pass
+            }
+        }
+
+        function createBanana(initialBottom) {
+            const banana = document.createElement('div');
+            banana.classList.add('banana');
+            banana.style.left = '100vw';
+            banana.style.bottom = `${initialBottom}px`;
+            gameContainer.appendChild(banana);
+
+            const moveInterval = setInterval(() => {
+                const bananaLeft = parseInt(getComputedStyle(banana).left);
+                const monkeyBottom = parseInt(getComputedStyle(monkey).bottom);
+
+                // Check for collision
+                if (
+                    bananaLeft < 150 &&
+                    bananaLeft > 100 &&
+                    monkeyBottom < initialBottom + 30 &&
+                    monkeyBottom + 60 > initialBottom
+                ) {
+                    endGame();
+                    clearInterval(moveInterval);
+                    return;
+                }
+
+                // Remove bananas and increase score
+                if (bananaLeft <= 0) {
+                    banana.remove();
+                    if (initialBottom === 100) {
+                        score++; // Increment score only for bottom bananas
+                        scoreDisplay.textContent = score;
+                    }
+                    if (score % 5 === 0) {
+                        bananaSpeed += 1; // Increase difficulty
+                    }
+                    clearInterval(moveInterval);
+                }
+
+                banana.style.left = `${bananaLeft - bananaSpeed}px`;
+            }, 20);
+        }
+
+        let bananaInterval = setInterval(createBananaPair, 1500);
+
+        function endGame() {
+            gameOver = true;
+            clearInterval(bananaInterval);
+            document.querySelectorAll('.banana').forEach(banana => banana.remove());
+            const gameOverScreen = document.createElement('div');
+            gameOverScreen.classList.add('game-over');
+            gameOverScreen.innerHTML = `
+                <p>Game Over! Your final score is ${score}.</p>
+                <button onclick="restartGame()">Restart</button>
+            `;
+            gameContainer.appendChild(gameOverScreen);
+        }
+
+        function restartGame() {
+            score = 0;
+            bananaSpeed = 5;
+            scoreDisplay.textContent = score;
+            gameOver = false;
+            document.querySelector('.game-over').remove();
+            bananaInterval = setInterval(createBananaPair, 1500);
+        }
+    </script>
+</body>
+</html>
