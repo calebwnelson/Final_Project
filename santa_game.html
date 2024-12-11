@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Santa's Adventure Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #87CEEB, #ffffff);
+        }
+        canvas {
+            display: block;
+        }
+        #gameOverModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            color: white;
+            font-size: 20px;
+            text-align: center;
+            border-radius: 8px;
+            z-index: 1000;
+        }
+        #gameOverModal button {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="gameOverModal">
+        <p>Game Over! Your score: <span id="finalScore"></span></p>
+        <button id="playAgainButton">Play Again</button>
+        <button id="mainPageButton">Return to Main Page</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const gravity = 0.5;
+        let gameSpeed = 5;
+        let isJumping = false;
+        let isGameOver = false;
+
+        const santaImage = new Image();
+        santaImage.src = 'assets/img/santa.png';
+
+        const reindeerImage = new Image();
+        reindeerImage.src = 'assets/img/reindeer.png';
+
+        const presentImages = [
+            'assets/img/red_present.png',
+            'assets/img/green_present.png'
+        ];
+
+        function getRandomPresentImage() {
+            const img = new Image();
+            img.src = presentImages[Math.floor(Math.random() * presentImages.length)];
+            return img;
+        }
+
+        class Santa {
+            constructor() {
+                this.x = 50;
+                this.y = canvas.height - 150;
+                this.width = 50;
+                this.height = 80;
+                this.dy = 0;
+            }
+
+            draw() {
+                ctx.drawImage(santaImage, this.x, this.y, this.width, this.height);
+            }
+
+            update() {
+                if (isJumping) {
+                    this.dy = -15;
+                    isJumping = false;
+                }
+
+                this.y += this.dy;
+                this.dy += gravity;
+
+                if (this.y + this.height > canvas.height) {
+                    this.y = canvas.height - this.height;
+                    this.dy = 0;
+                }
+
+                this.draw();
+            }
+        }
+
+        class Obstacle {
+            constructor(type) {
+                this.type = type;
+                this.width = type === 'gift' ? 40 : 60;
+                this.height = type === 'gift' ? 40 : 50;
+                this.x = canvas.width;
+                this.y = type === 'gift' ? canvas.height - this.height : canvas.height - 200;
+                this.image = type === 'gift' ? getRandomPresentImage() : reindeerImage;
+            }
+
+            draw() {
+                ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+            }
+
+            update() {
+                this.x -= gameSpeed;
+                this.draw();
+            }
+        }
+
+        const santa = new Santa();
+        const obstacles = [];
+        let frame = 0;
+        let score = 0;
+
+        function resetGame() {
+            gameSpeed = 5;
+            score = 0;
+            frame = 0;
+            obstacles.length = 0;
+            santa.y = canvas.height - santa.height;
+            isGameOver = false;
+        }
+
+        function showGameOverModal() {
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('gameOverModal').style.display = 'block';
+        }
+
+        function hideGameOverModal() {
+            document.getElementById('gameOverModal').style.display = 'none';
+        }
+
+        function animate() {
+            if (isGameOver) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            santa.update();
+
+            if (frame % Math.max(100 - score, 50) === 0) {
+                const type = Math.random() < 0.5 ? 'gift' : 'reindeer';
+                obstacles.push(new Obstacle(type));
+            }
+
+            obstacles.forEach((obstacle, index) => {
+                obstacle.update();
+
+                if (
+                    santa.x < obstacle.x + obstacle.width &&
+                    santa.x + santa.width > obstacle.x &&
+                    santa.y < obstacle.y + obstacle.height &&
+                    santa.y + santa.height > obstacle.y
+                ) {
+                    isGameOver = true;
+                    showGameOverModal(); 
+                    return;
+                }
+
+                if (obstacle.x + obstacle.width < 0) {
+                    obstacles.splice(index, 1);
+                    score++;
+
+                    if (score % 5 === 0) {
+                        gameSpeed += 0.5;
+                    }
+                }
+            });
+
+            ctx.fillStyle = 'black';
+            ctx.font = '20px Arial';
+            ctx.fillText(`Score: ${score}`, 20, 30);
+
+            frame++;
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && santa.y + santa.height === canvas.height && !isGameOver) {
+                isJumping = true;
+            }
+        });
+
+        document.getElementById('playAgainButton').addEventListener('click', () => {
+            hideGameOverModal();
+            resetGame();
+            animate();
+        });
+
+        document.getElementById('mainPageButton').addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+
+        animate();
+    </script>
+</body>
+</html>

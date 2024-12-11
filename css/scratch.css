@@ -1,0 +1,97 @@
+body {
+    background-color: #fffdd0; 
+    font-family: "Arial", sans-serif; 
+    color: #333333; 
+    margin: 0;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-top: 50px
+}
+
+h1 {
+    background-color: #f7e6d4;
+    color: #4a342e;
+    text-align: center;
+    padding: 20px;
+    font-size: 2em;
+    border-bottom: 3px solid #d4af37;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+h4 {background-color: #d4af37;
+    color: #4a342e;
+    text-align: center;
+    padding: 10px;
+    font-size: 1em;
+    font-family:Verdana, Geneva, Tahoma, sans-serif
+}
+
+.div-one {
+    width: 70%;
+    margin: auto;
+    padding: 10px;
+    text-align: center;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    color: #333333; 
+}
+
+.div-two {
+    width: 20%;
+    float: left;
+    margin: 10px;
+    padding: 15px;
+    background-color: #e8d8c3;
+    border-radius: 10px;
+    font-family:'Times New Roman', Times, serif;
+    text-align:center;
+    flex: 1;
+    color: #333333; 
+}
+
+.div-three {
+    width: 50%;
+    float: right;
+    margin: 20px;
+    padding: 15px;
+    background-color: #e8d8c3;
+    border-radius: 10px;
+    font-family: 'Times New Roman', 'Times New Roman', Times, serif;
+    color: #333333; 
+}
+
+.div-two-pic {
+    margin: 10px;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .image-block {
+    margin-left: 20px;
+  }
+  
+  .tableauPlaceholder {
+    position: relative;
+    width: 100%; 
+    height: 0;
+    overflow: hidden;
+    padding-bottom: 56.25%; 
+}
+
+.tableauViz iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    transform: scale(0.75);
+    transform-origin: 0 0; 
+    width: 133.33%; 
+    height: 133.33%; 
+}
